@@ -1,12 +1,31 @@
-# This is a placeholder so actions won't default to a getting started page
+name: Deploy my lambda function
 
-name: Placeholder
-
-on: push
+on: 
+  push:
+    branches:
+      - main
 
 jobs:
   init:
     runs-on: ubuntu-latest
     steps:
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: check out code
+        uses: actions/checkout@v2
+      - name: set up python
+        uses: actions/setup-python@v2
+        with: 
+          python-version: 3.8
+      - name: Install libraries
+        run: |
+            cd function
+            pyhton -m pip install --upgrade pip
+            if [ -f requirement.txt ]; then pip install -r requirement.txt -t .; fi
+      - name: create zip bundle
+        run: |
+           cd function
+           zip -r ../{{ github.sha }}.zip .
+      - name: Archieve artifaces
+        uses: actions/upload-artifact@v2
+        with: 
+          name: zipped bundle
+          path: {{ github.sha }}.zip
